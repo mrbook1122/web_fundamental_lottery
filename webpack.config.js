@@ -2,6 +2,7 @@ const path = require('path')
 const webpack = require('webpack')
 const {CleanWebpackPlugin} = require('clean-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 
 module.exports = {
     entry: {
@@ -24,6 +25,22 @@ module.exports = {
                     },
                     "css-loader"
                 ]
+            },
+            {
+                test: /\.less$/,
+                use: [
+                    {
+                        loader: MiniCssExtractPlugin.loader
+                    },
+                    'css-loader',
+                    {
+                        loader: "less-loader",
+                        options: {
+                            javascriptEnabled: true
+                        }
+                    }
+
+                ]
             }
         ]
     },
@@ -43,9 +60,10 @@ module.exports = {
         new webpack.HotModuleReplacementPlugin(),
         new CleanWebpackPlugin(),
         new MiniCssExtractPlugin({
-            filename: '[name].[hash].css',
-            chunkFilename: '[id].[hash].css'
-        })
+            filename: '[name].css',
+            chunkFilename: '[id].css'
+        }),
+        new OptimizeCSSAssetsPlugin({})
     ],
     optimization: {
         splitChunks: {
