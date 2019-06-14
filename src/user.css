@@ -1,0 +1,7 @@
+.bo-row:hover .bo-btn {
+    visibility: visible;
+}
+
+.bo-row .bo-btn {
+    visibility: hidden;
+}
