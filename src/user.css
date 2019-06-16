@@ -5,3 +5,12 @@
 .bo-row .bo-btn {
     visibility: hidden;
 }
+
+.bo-btn:hover {
+    background-color: red;
+    border-color: red;
+}
+
+.bo-name {
+    width: 85%;
+}
