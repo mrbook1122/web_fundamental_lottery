@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDom from 'react-dom'
-import {Row, Col, Checkbox, Button, Input} from 'antd'
+import {Row, Col, Checkbox, Button, Input, message} from 'antd'
 import axios from 'axios'
 import './user.css'
 
@@ -8,23 +8,23 @@ class UserItem extends React.Component {
     render() {
         return (
             <div>
-                <Row type="flex" justify="center" className={"bo-row"}>
-                    <Col span={1}>
+                <Row type="flex" justify="center" className={"bo-row"} style={{height: 40}} align={'middle'}>
+                    <Col span={1} style={{textAlign: "center"}}>
                         {this.props.index + 1}
                     </Col>
-                    <Col span={1}>
+                    <Col span={2} style={{textAlign: "center"}}>
                         <Checkbox defaultChecked={this.props.user.coming}
                                   onClick={(e) => this.props.changeComing(e, this.props.user.id)}/>
                     </Col>
-                    <Col span={3}>
+                    <Col span={2} style={{textAlign: "center"}}>
                         {this.props.user.name}
                     </Col>
-                    <Col span={3}>
+                    <Col span={2} style={{textAlign: "center"}}>
                         {this.props.user.number}
                     </Col>
-                    <Col span={3}>
+                    <Col span={1} style={{textAlign: "center"}}>
                         <Button icon="delete" shape={"circle"} type={"primary"} className={"bo-btn"}
-                                onClick={() => this.props.deleteUser(this.props.user.id, this.props.index)}/>
+                                onClick={() => this.props.deleteUser(this.props.user.number, this.props.index)}/>
                     </Col>
                 </Row>
             </div>
@@ -50,8 +50,10 @@ class App extends React.Component {
         this.deleteUser = this.deleteUser.bind(this)
     }
 
-    deleteUser(id, index) {
-        console.log(id)
+    deleteUser(number, index) {
+        axios.post("http://localhost:8080/lottery_war/api/user/delete", {
+            number: number
+        })
         let users = this.state.users
         users.splice(index, 1)
         this.setState({
@@ -75,9 +77,24 @@ class App extends React.Component {
             name: this.state.name,
             number: this.state.number
         })
-        this.setState({
-            added: false
-        })
+            .then((resp) => {
+                console.log(resp.data)
+                if (resp.data.code === 100) {
+                    message.warning(resp.data.msg)
+                } else {
+                    let users = this.state.users
+                    users[users.length] = {
+                        coming: true,
+                        id: users.length,
+                        name: this.state.name,
+                        number: this.state.number
+                    }
+                    this.setState({
+                        users: users,
+                        added: false
+                    })
+                }
+            })
     }
 
     inputNumber(event) {
@@ -107,18 +124,9 @@ class App extends React.Component {
             })
     }
 
-    componentWillUpdate(nextProps, nextState, nextContext) {
-        // axios.get("http://localhost:8080/lottery_war/api/users")
-        //     .then((resp) => {
-        //         this.setState({
-        //             users: resp.data
-        //         })
-        //     })
-    }
-
     render() {
         const userList = this.state.users.map((user, index) => (
-            <UserItem key={user.id} user={user} index={index}
+            <UserItem key={index} user={user} index={index}
                       changeComing={this.changeComing}
                       deleteUser={this.deleteUser}/>
         ))
@@ -143,8 +151,27 @@ class App extends React.Component {
                 <Button onClick={this.handleAdd} shape={'circle'} type={"primary"} icon={'plus'}/>
             </Col>
         </Row>
+        // const error = this.state.error ? <Row type={'flex'} justify={'center'} style={{marginTop: 20}}>
+        //     <Col span={3}>
+        //         <Alert message={'学号已存在'} type={"error"}/>
+        //     </Col></Row> : null
         return (
             <div>
+                <Row style={{height: 40}} type={'flex'} justify={'center'} align={'middle'}>
+                    <Col span={1} style={{textAlign: "center"}}>
+                        序号
+                    </Col>
+                    <Col span={2} style={{textAlign: "center"}}>
+                        是否参与抽奖
+                    </Col>
+                    <Col span={2} style={{textAlign: "center"}}>
+                        姓名
+                    </Col>
+                    <Col span={2} style={{textAlign: "center"}}>
+                        学号
+                    </Col>
+                    <Col span={1}></Col>
+                </Row>
                 {userList}
                 {newUser}
                 {added}
