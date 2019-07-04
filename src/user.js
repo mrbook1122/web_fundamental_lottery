@@ -14,7 +14,8 @@ class UserItem extends React.Component {
                     </Col>
                     <Col span={2} style={{textAlign: "center"}}>
                         <Checkbox defaultChecked={this.props.user.coming}
-                                  onClick={(e) => this.props.changeComing(e, this.props.user.id)}/>
+                                  onClick={(e) => this.props.changeComing(e, this.props.user.number, this.props.index)}
+                                  checked={this.props.user.coming}/>
                     </Col>
                     <Col span={2} style={{textAlign: "center"}}>
                         {this.props.user.name}
@@ -39,7 +40,8 @@ class App extends React.Component {
             users: [],
             added: false,
             name: '',
-            number: ''
+            number: '',
+            selectAll: '全选'
         }
         this.handleAdd = this.handleAdd.bind(this)
         this.handleCancel = this.handleCancel.bind(this)
@@ -48,6 +50,25 @@ class App extends React.Component {
         this.handleSubmit = this.handleSubmit.bind(this)
         this.changeComing = this.changeComing.bind(this)
         this.deleteUser = this.deleteUser.bind(this)
+        this.selectAll = this.selectAll.bind(this)
+    }
+
+    selectAll(e) {
+        let check = e.target.checked
+        axios.post('http://localhost:8080/lottery_war/api/user/update', {
+            msg: 'all',
+            code: check ? 1 : 0
+        })
+        let users = this.state.users
+        users = users.map((user) => {
+            user.coming = check
+            return user
+        })
+        console.log(users === this.state.users)
+        this.setState({
+            selectAll: check ? '取消' : '全选',
+            users: users
+        })
     }
 
     deleteUser(number, index) {
@@ -61,9 +82,18 @@ class App extends React.Component {
         })
     }
 
-    changeComing(e, id) {
-        console.log(e.target.checked)
-        console.log(id)
+    changeComing(e, number, index) {
+        let check = e.target.checked
+        console.log(check)
+        axios.post("http://localhost:8080/lottery_war/api/user/update", {
+            msg: number,
+            code: check ? 1 : 0
+        })
+        let users = this.state.users
+        users[index].coming = check
+        this.setState({
+            users: users
+        })
     }
 
     inputName(event) {
@@ -126,7 +156,7 @@ class App extends React.Component {
 
     render() {
         const userList = this.state.users.map((user, index) => (
-            <UserItem key={index} user={user} index={index}
+            <UserItem key={user.number} user={user} index={index}
                       changeComing={this.changeComing}
                       deleteUser={this.deleteUser}/>
         ))
@@ -173,6 +203,17 @@ class App extends React.Component {
                     <Col span={1}></Col>
                 </Row>
                 {userList}
+                <Row style={{height: 40}} type={'flex'} justify={'center'} align={'middle'}>
+                    <Col span={1}></Col>
+                    <Col span={2}>
+                        <div style={{marginLeft: "45%"}}>
+                            <Checkbox onClick={this.selectAll.bind(this)}>{this.state.selectAll}</Checkbox>
+                        </div>
+                    </Col>
+                    <Col span={2}></Col>
+                    <Col span={2}></Col>
+                    <Col span={1}></Col>
+                </Row>
                 {newUser}
                 {added}
             </div>
